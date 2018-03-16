@@ -9,7 +9,7 @@ import com.scwang.refreshlayout.R;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 
 /**
- * 网页-Github
+ * 微博列表
  */
 public class FeedlistPracticeActivity extends AppCompatActivity {
 
@@ -28,9 +28,9 @@ public class FeedlistPracticeActivity extends AppCompatActivity {
             }
         });
 
+        final RefreshLayout refreshLayout = (RefreshLayout) findViewById(R.id.refreshLayout);
         if (isFirstEnter) {
             isFirstEnter = false;
-            final RefreshLayout refreshLayout = (RefreshLayout) findViewById(R.id.smartLayout);
             refreshLayout.autoRefresh();
         }
 

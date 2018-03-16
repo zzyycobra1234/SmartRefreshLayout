@@ -2,222 +2,222 @@ package com.scwang.smartrefresh.layout.footer;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
-import android.view.Gravity;
+import android.util.TypedValue;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.scwang.smartrefresh.layout.R;
 import com.scwang.smartrefresh.layout.api.RefreshFooter;
-import com.scwang.smartrefresh.layout.api.RefreshKernel;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.constant.RefreshState;
 import com.scwang.smartrefresh.layout.constant.SpinnerStyle;
+import com.scwang.smartrefresh.layout.internal.ArrowDrawable;
+import com.scwang.smartrefresh.layout.internal.InternalClassics;
 import com.scwang.smartrefresh.layout.internal.ProgressDrawable;
 import com.scwang.smartrefresh.layout.util.DensityUtil;
-
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 /**
  * 经典上拉底部组件
  * Created by SCWANG on 2017/5/28.
  */
 
-public class ClassicsFooter extends LinearLayout implements RefreshFooter {
+@SuppressWarnings({"unused", "UnusedReturnValue", "deprecation"})
+public class ClassicsFooter extends InternalClassics<ClassicsFooter> implements RefreshFooter {
 
-    private static final String REFRESH_BOTTOM_PULLUP = "上拉加载更多";
-    private static final String REFRESH_BOTTOM_RELEASE = "释放立即加载";
-    private static final String REFRESH_BOTTOM_LOADING = "正在加载...";
+    public static String REFRESH_FOOTER_PULLING = null;//"上拉加载更多";
+    public static String REFRESH_FOOTER_RELEASE = null;//"释放立即加载";
+    public static String REFRESH_FOOTER_LOADING = null;//"正在加载...";
+    public static String REFRESH_FOOTER_REFRESHING = null;//"正在刷新...";
+    public static String REFRESH_FOOTER_FINISH = null;//"加载完成";
+    public static String REFRESH_FOOTER_FAILED = null;//"加载失败";
+    public static String REFRESH_FOOTER_NOTHING = null;//"没有更多数据了";
 
-    private TextView mBottomText;
-    private ImageView mProgressView;
-    private ProgressDrawable mProgressDrawable;
-    private SpinnerStyle mSpinnerStyle = SpinnerStyle.Translate;
+    protected boolean mNoMoreData = false;
 
     //<editor-fold desc="LinearLayout">
     public ClassicsFooter(Context context) {
-        super(context);
-        this.initView(context, null, 0);
+        this(context, null);
     }
 
     public ClassicsFooter(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        this.initView(context, attrs, 0);
+        this(context, attrs, 0);
     }
 
     public ClassicsFooter(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        this.initView(context, attrs, defStyleAttr);
-    }
 
-    private void initView(Context context, AttributeSet attrs, int defStyleAttr) {
-        DensityUtil density = new DensityUtil();
-
-        setGravity(Gravity.CENTER);
-        setMinimumHeight(density.dip2px(60));
-
-        mProgressDrawable = new ProgressDrawable();
-        mProgressDrawable.setColor(0xff666666);
-        mProgressView = new ImageView(context);
-        mProgressView.setImageDrawable(mProgressDrawable);
-        LayoutParams lpPathView = new LayoutParams(density.dip2px(16), density.dip2px(16));
-        lpPathView.rightMargin = density.dip2px(10);
-        addView(mProgressView, lpPathView);
-
-        mBottomText = new AppCompatTextView(context, attrs, defStyleAttr);
-        mBottomText.setTextColor(0xff666666);
-        mBottomText.setTextSize(16);
-        mBottomText.setText(REFRESH_BOTTOM_PULLUP);
-
-        addView(mBottomText, WRAP_CONTENT, WRAP_CONTENT);
-
-        if (!isInEditMode()) {
-            mProgressView.setVisibility(GONE);
+        if (REFRESH_FOOTER_PULLING == null) {
+            REFRESH_FOOTER_PULLING = context.getString(R.string.srl_footer_pulling);
         }
+
+        if (REFRESH_FOOTER_RELEASE == null) {
+            REFRESH_FOOTER_RELEASE = context.getString(R.string.srl_footer_release);
+        }
+
+        if (REFRESH_FOOTER_LOADING == null) {
+            REFRESH_FOOTER_LOADING = context.getString(R.string.srl_footer_loading);
+        }
+
+        if (REFRESH_FOOTER_REFRESHING == null) {
+            REFRESH_FOOTER_REFRESHING = context.getString(R.string.srl_footer_refreshing);
+        }
+
+        if (REFRESH_FOOTER_FINISH == null) {
+            REFRESH_FOOTER_FINISH = context.getString(R.string.srl_footer_finish);
+        }
+
+        if (REFRESH_FOOTER_FAILED == null) {
+            REFRESH_FOOTER_FAILED = context.getString(R.string.srl_footer_failed);
+        }
+
+        if (REFRESH_FOOTER_NOTHING == null) {
+            REFRESH_FOOTER_NOTHING = context.getString(R.string.srl_footer_nothing);
+        }
+
+        final View thisView = this;
+        final View arrowView = mArrowView;
+        final View progressView = mProgressView;
+        final DensityUtil density = new DensityUtil();
+
+        mTitleText.setTextColor(0xff666666);
+        mTitleText.setText(thisView.isInEditMode() ? REFRESH_FOOTER_LOADING : REFRESH_FOOTER_PULLING);
 
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.ClassicsFooter);
 
+        LayoutParams lpArrow = (LayoutParams) arrowView.getLayoutParams();
+        LayoutParams lpProgress = (LayoutParams) progressView.getLayoutParams();
+        lpProgress.rightMargin = ta.getDimensionPixelSize(R.styleable.ClassicsFooter_srlDrawableMarginRight, density.dip2px(20));
+        lpArrow.rightMargin = lpProgress.rightMargin;
+
+        lpArrow.width = ta.getLayoutDimension(R.styleable.ClassicsFooter_srlDrawableArrowSize, lpArrow.width);
+        lpArrow.height = ta.getLayoutDimension(R.styleable.ClassicsFooter_srlDrawableArrowSize, lpArrow.height);
+        lpProgress.width = ta.getLayoutDimension(R.styleable.ClassicsFooter_srlDrawableProgressSize, lpProgress.width);
+        lpProgress.height = ta.getLayoutDimension(R.styleable.ClassicsFooter_srlDrawableProgressSize, lpProgress.height);
+
+        lpArrow.width = ta.getLayoutDimension(R.styleable.ClassicsFooter_srlDrawableSize, lpArrow.width);
+        lpArrow.height = ta.getLayoutDimension(R.styleable.ClassicsFooter_srlDrawableSize, lpArrow.height);
+        lpProgress.width = ta.getLayoutDimension(R.styleable.ClassicsFooter_srlDrawableSize, lpProgress.width);
+        lpProgress.height = ta.getLayoutDimension(R.styleable.ClassicsFooter_srlDrawableSize, lpProgress.height);
+
+        mFinishDuration = ta.getInt(R.styleable.ClassicsFooter_srlFinishDuration, mFinishDuration);
         mSpinnerStyle = SpinnerStyle.values()[ta.getInt(R.styleable.ClassicsFooter_srlClassicsSpinnerStyle, mSpinnerStyle.ordinal())];
 
+        if (ta.hasValue(R.styleable.ClassicsFooter_srlDrawableArrow)) {
+            mArrowView.setImageDrawable(ta.getDrawable(R.styleable.ClassicsFooter_srlDrawableArrow));
+        } else {
+            mArrowDrawable = new ArrowDrawable();
+            mArrowDrawable.setColor(0xff666666);
+            mArrowView.setImageDrawable(mArrowDrawable);
+        }
+
+        if (ta.hasValue(R.styleable.ClassicsFooter_srlDrawableProgress)) {
+            mProgressView.setImageDrawable(ta.getDrawable(R.styleable.ClassicsFooter_srlDrawableProgress));
+        } else {
+            mProgressDrawable = new ProgressDrawable();
+            mProgressDrawable.setColor(0xff666666);
+            mProgressView.setImageDrawable(mProgressDrawable);
+        }
+
+        if (ta.hasValue(R.styleable.ClassicsFooter_srlTextSizeTitle)) {
+            mTitleText.setTextSize(TypedValue.COMPLEX_UNIT_PX, ta.getDimensionPixelSize(R.styleable.ClassicsFooter_srlTextSizeTitle, DensityUtil.dp2px(16)));
+        } else {
+            mTitleText.setTextSize(16);
+        }
+
         if (ta.hasValue(R.styleable.ClassicsFooter_srlPrimaryColor)) {
-            int primaryColor = ta.getColor(R.styleable.ClassicsFooter_srlPrimaryColor, 0);
-            if (ta.hasValue(R.styleable.ClassicsFooter_srlAccentColor)) {
-                int accentColor = ta.getColor(R.styleable.ClassicsFooter_srlAccentColor, 0);
-                setPrimaryColors(primaryColor, accentColor);
-            } else {
-                setPrimaryColors(primaryColor);
-            }
-        } else if (ta.hasValue(R.styleable.ClassicsFooter_srlAccentColor)) {
-            int accentColor = ta.getColor(R.styleable.ClassicsFooter_srlAccentColor, 0);
-            setPrimaryColors(0, accentColor);
+            setPrimaryColor(ta.getColor(R.styleable.ClassicsFooter_srlPrimaryColor, 0));
+        }
+        if (ta.hasValue(R.styleable.ClassicsFooter_srlAccentColor)) {
+            setAccentColor(ta.getColor(R.styleable.ClassicsFooter_srlAccentColor, 0));
         }
 
         ta.recycle();
+
     }
+
+//    @Override
+//    protected ClassicsFooter self() {
+//        return this;
+//    }
 
     //</editor-fold>
 
     //<editor-fold desc="RefreshFooter">
 
     @Override
-    public void onInitialized(RefreshKernel layout, int height, int extendHeight) {
-
+    public void onStartAnimator(@NonNull RefreshLayout refreshLayout, int height, int extendHeight) {
+        if (!mNoMoreData) {
+            super.onStartAnimator(refreshLayout, height, extendHeight);
+        }
     }
 
     @Override
-    public void onPullingUp(float percent, int offset, int footerHeight, int extendHeight) {
-
-    }
-
-    @Override
-    public void onPullReleasing(float percent, int offset, int headHeight, int extendHeight) {
-
-    }
-
-    @Override
-    public void onStartAnimator(RefreshLayout layout, int headHeight, int extendHeight) {
-        mProgressView.setVisibility(VISIBLE);
-        mProgressDrawable.start();
-    }
-
-    @Override
-    public void onFinish(RefreshLayout layout) {
-        mProgressDrawable.stop();
-        mProgressView.setVisibility(GONE);
+    public int onFinish(@NonNull RefreshLayout layout, boolean success) {
+        if (!mNoMoreData) {
+            mTitleText.setText(success ? REFRESH_FOOTER_FINISH : REFRESH_FOOTER_FAILED);
+            return super.onFinish(layout, success);
+        }
+        return 0;
     }
 
     /**
-     * ClassicsFooter 没有主题色
-     * ClassicsFooter has no primary colors
+     * ClassicsFooter 在(SpinnerStyle.FixedBehind)时才有主题色
+     */
+    @Override@Deprecated
+    public void setPrimaryColors(@ColorInt int ... colors) {
+        if (mSpinnerStyle == SpinnerStyle.FixedBehind) {
+            super.setPrimaryColors(colors);
+        }
+    }
+
+    /**
+     * 设置数据全部加载完成，将不能再次触发加载功能
      */
     @Override
-    public void setPrimaryColors(int... colors) {
-        if (mSpinnerStyle == SpinnerStyle.FixedBehind) {
-            if (colors.length > 1) {
-                setBackgroundColor(colors[0]);
-                mBottomText.setTextColor(colors[1]);
-                mProgressDrawable.setColor(colors[1]);
-            } else if (colors.length > 0) {
-                setBackgroundColor(colors[0]);
-                if (colors[0] == 0xffffffff) {
-                    mBottomText.setTextColor(0xff666666);
-                    mProgressDrawable.setColor(0xff666666);
-                } else {
-                    mBottomText.setTextColor(0xffffffff);
-                    mProgressDrawable.setColor(0xffffffff);
-                }
+    public boolean setNoMoreData(boolean noMoreData) {
+        if (mNoMoreData != noMoreData) {
+            mNoMoreData = noMoreData;
+            final View arrowView = mArrowView;
+            if (noMoreData) {
+                mTitleText.setText(REFRESH_FOOTER_NOTHING);
+                arrowView.setVisibility(GONE);
+            } else {
+                mTitleText.setText(REFRESH_FOOTER_PULLING);
+                arrowView.setVisibility(VISIBLE);
+            }
+//            super.onFinish(mRefreshKernel.getRefreshLayout(), true);
+        }
+        return true;
+    }
+
+    @Override
+    public void onStateChanged(@NonNull RefreshLayout refreshLayout, @NonNull RefreshState oldState, @NonNull RefreshState newState) {
+        final View arrowView = mArrowView;
+        if (!mNoMoreData) {
+            switch (newState) {
+                case None:
+                    arrowView.setVisibility(VISIBLE);
+                case PullUpToLoad:
+                    mTitleText.setText(REFRESH_FOOTER_PULLING);
+                    arrowView.animate().rotation(180);
+                    break;
+                case Loading:
+                case LoadReleased:
+                    arrowView.setVisibility(GONE);
+                    mTitleText.setText(REFRESH_FOOTER_LOADING);
+                    break;
+                case ReleaseToLoad:
+                    mTitleText.setText(REFRESH_FOOTER_RELEASE);
+                    arrowView.animate().rotation(0);
+                    break;
+                case Refreshing:
+                    mTitleText.setText(REFRESH_FOOTER_REFRESHING);
+                    arrowView.setVisibility(GONE);
+                    break;
             }
         }
-
-    }
-
-
-    @NonNull
-    public View getView() {
-        return this;
-    }
-
-    @Override
-    public SpinnerStyle getSpinnerStyle() {
-        return mSpinnerStyle;
-    }
-
-    @Override
-    public void onStateChanged(RefreshLayout refreshLayout, RefreshState oldState, RefreshState newState) {
-        switch (newState) {
-            case None:
-                restoreRefreshLayoutBackground();
-            case PullToUpLoad:
-                mBottomText.setText(REFRESH_BOTTOM_PULLUP);
-                break;
-            case Loading:
-                mBottomText.setText(REFRESH_BOTTOM_LOADING);
-                break;
-            case ReleaseToLoad:
-                mBottomText.setText(REFRESH_BOTTOM_RELEASE);
-                replaceRefreshLayoutBackground(refreshLayout);
-                break;
-        }
-    }
-    //</editor-fold>
-
-    //<editor-fold desc="private">
-    private Runnable restoreRunable;
-    private void restoreRefreshLayoutBackground() {
-        if (restoreRunable != null) {
-            restoreRunable.run();
-            restoreRunable = null;
-        }
-    }
-
-    private void replaceRefreshLayoutBackground(RefreshLayout refreshLayout) {
-        if (restoreRunable == null && mSpinnerStyle == SpinnerStyle.FixedBehind) {
-            restoreRunable = new Runnable() {
-                Drawable drawable = refreshLayout.getLayout().getBackground();
-                @Override
-                public void run() {
-                    refreshLayout.getLayout().setBackgroundDrawable(drawable);
-                }
-            };
-            refreshLayout.getLayout().setBackgroundDrawable(getBackground());
-        }
-    }
-    //</editor-fold>
-
-    //<editor-fold desc="API">
-    public ClassicsFooter setSpinnerStyle(SpinnerStyle style) {
-        this.mSpinnerStyle = style;
-        return this;
-    }
-    public ClassicsFooter setAccentColor(int accentColor) {
-        mBottomText.setTextColor(accentColor);
-        mProgressDrawable.setColor(accentColor);
-        return this;
     }
     //</editor-fold>
 
